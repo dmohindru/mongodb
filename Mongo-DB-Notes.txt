@@ -1,0 +1,1089 @@
+SECTION 1
+---------
+# Start a mongodb server and point to a different database folder
+mongod --dbpath /home/dhruv/Programming/mongodb/data/db
+
+# Start a mongodb server on a particular port 
+mongod --port 27018
+
+# Connect to db server from a shell(client) on a default port
+mongo
+
+# Connect to db server from a shell(client) on a particular port
+mongo --port 27018
+
+# When connected to db server
+# Show databases
+show dbs
+
+# Connect to existing or new database
+use <db_name>
+
+# Insert a record in db's collection
+db.<collection_name>.insertOne({<any_object_structure}) 
+e.g
+db.products.insertOne({name: "A Book", price: 12.99})
+
+# Find all records in collection use find method without any arguments. Give arguments to db if you want to filter your search
+db.<collection_name>.find()
+or below command to have a pretty output
+db.<collection_name>.find().pretty()
+
+# Clear screen
+cls
+
+SECTION 2
+---------
+# Data Types
+> String
+> Number
+> Boolean
+
+# CRUD Operation function
+> Create
+insertOne(data, options)
+insertMany(data, options)
+
+> Read
+find(filter, options)
+findOne(filter, options)
+
+> Update
+updateOne(filter, data, options)
+updateMany(filter, data, options)
+replaceOne(filter, data, options)
+
+> Delete
+deleteOne(filter, options)
+deleteMany(filter, options)
+
+E.g.
+# This command deletes one document which as following property
+db.<collection_name>.deleteOne({departureAirport: "TXL"})
+
+# This command updates first record which has property distance: 12000
+db.<collection_name>.updateOne({distance: 12000}, {$set: {marker: "delete"}})
+
+# This command updates all records in a collection
+db.<collection_name>.updateMany({}, {$set: {marker: "toDelete"}}) 
+
+# This command replaces the whole body of document with a provided one
+db.<collection_name>.update({_id: "Some_Value"}, {newKey: "New Value"})
+
+# This command replaced the whole body of documents based on search criteria with a provided new one
+db.<collection_name>.replaceMany({_id: "Some_Value"}, {newKey: "New Value"})
+
+# This command deletes all documents in a collection with property marker: "toDelete"
+db.<collection_name>.deleteMany({marker: "toDelete"})
+
+# This command deletes all documents in a collection. {} filter acts as * wildcard
+db.<collection_name>.deleteMany({})
+
+# This command inserts many documents in a collection
+db.<collection_name>.insertMany([{key: "value1"}, {key: "value2"}])
+
+# This command find data in collection by applying a filter. Its selects all documents which has a age property set to 25.
+db.<collection_name>.find({age: 25})
+
+# This command selects all documents which has a age property greater than 25.
+db.<collection_name>.find({age: {$gt: 25}})
+
+# This command selects first documents which has a age property greater than 25.
+db.<collection_name>.findOne({age: {$gt: 25}})
+
+
+find() function
+---------------
+find() function does not return documents but Cursor Object to fetch data
+
+Various Cursor Object methods
+> toArray() // Returns documents as arrays. Not really recommended for large set of documents 
+> forEach() // Runs a commands for each document in a collection
+> pretty() // As seen before. It prints data in JSON pretty format
+
+Projections
+-----------
+This concept helps to get only a subset of a documents from MongoDB server over a internet and thus simplifying logic on receiving end and saving internet bandwidth.
+# Below command illustrates projection. Basically we set the second argument in find function to documents properties we are interested in.
+db.<collection_name>.find({}, {name: 1})
+basic syntax to specify documents properties to be included is as propertyName: 1
+to exclude default property from documents use it as _id: 0
+
+Embedded Documents
+-----------------
+Document always start and ends with {} set of braces. A documents example
+{
+  name: "Dhruv Mohindru",
+  age: 38
+}
+
+A document can has also have embedded document for example
+{
+  name: "Dhruv Mohindru",
+  age: 38,
+  address: {
+  		street: "43/24-28 Mons Rd",
+  		city: "Westmead",
+  		postcode: 2145,
+  		state: "NSW"
+  	}
+}
+
+Arrays of Data
+--------------
+Arrays are marked by [] of brackets. An array can have same or mixed type of data object like string, number or documents itself.
+{
+	name: "Dhruv Mohindru"
+	hobbies: ["Coding", "Computer Games"]
+}
+
+Accessing Structured Data
+-------------------------
+With MongoDB access a part documents as below
+db.<collection_name>.find({name: "Dhruv Mohindru"}).hobbies
+
+or we can search a collection by search for hobbies arrays as
+db.<collection_name>.find({hobbies: "Coding"}).pretty()
+mongoDB is smart enought to figure out that hobbies is an array in a document.  
+
+To search on the basis of embedded documents use below command (. notation)
+db.<collection_name>.find({"address.state": "NSW"}).pretty()
+Please note quotation mark on "address.state", without these quotation marks find query will fail.
+
+SECTION 3
+---------
+# Data types of MongoDB
+> Text e.g "Max"
+> Boolean e.g true
+> Number
+>> Integer (int32)
+>> NumberLong (int64)
+>> NumberDecimal e.g. 12.99
+> ObjectId e.g. ObjectId("sfasd")
+> ISODate e.g. ISODate("2018-09-09")
+> Timestamp
+> Embedded Document
+> Array
+
+# See driver documents for driver specific API functions
+
+# For Mongodb datatype limits see
+https://docs.mongodb.com/manual/reference/limits/
+
+# Relationships
+Can exists as embedded documents or references.
+References can be made in a documents as ObjectId("long-value-of-id -value")
+
+Example of many to many relationships using 3 collections (like sql world)
+Products Collections
+{ "_id" : ObjectId("5ff951db213dd6680cbbafef"), 
+  "title" : "A Book", 
+  "price" : 12.99 
+} 
+
+Customers Collections
+{ "_id" : ObjectId("5ff95213213dd6680cbbaff0"), 
+  "name" : "Max", 
+  "age" : 29 
+}
+
+Orders Collections (Many to Many) - Like a SQL World
+{ "_id" : ObjectId("5ff95259213dd6680cbbaff1"), 
+  "productId" : ObjectId("5ff951db213dd6680cbbafef"), 
+  "customerId" : ObjectId("5ff95213213dd6680cbbaff0") 
+}
+
+Example of many to many relationships using 2 collections (mongoDB way)
+Customers collection
+{ "_id" : ObjectId("5ff951db213dd6680cbbafef"), 
+  "title" : "A Book", 
+  "price" : 12.99,
+  "orders" : [ {
+  		  "productId": ObjectId("5ff951db213dd6680cbbafef"),
+  		  "quantity": 2
+  		}
+  	     ]
+}
+
+# aggregate function is used to merge data from different collections
+e.g. db.books.aggregate([{$lookup: {from: "authors", localField: "authors", foriegnField: "_id", as: "creators"}}])
+
+Schema Validation
+-----------------
+Validation Level
+> strict: All inserts & updates
+> moderate: All inserts & updates to correct documents
+
+Validation Action
+> error: Throw error and deny insert/update
+> warning: Log warning but proceed
+
+Validation can be set on while creating a collection as shown below.
+db.createCollection('name_of_collection', {
+  validator: {
+    $jsonSchema: {
+      bsonType: 'object',
+      required: ['title', 'text', 'creator', 'comments'],
+      properties: {
+        title: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        text: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        creator: {
+          bsonType: 'objectId',
+          description: 'must be an objectid and is required'
+        },
+        comments: {
+          bsonType: 'array',
+          description: 'must be an array and is required',
+          items: {
+            bsonType: 'object',
+            required: ['text', 'author'],
+            properties: {
+              text: {
+                bsonType: 'string',
+                description: 'must be a string and is required'
+              },
+              author: {
+                bsonType: 'objectId',
+                description: 'must be an objectid and is required'
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+});
+
+Validation action can be set after a collection is created with above command as below. 
+db.runCommand({
+  collMod: 'posts',
+  validator: {
+    $jsonSchema: {
+      bsonType: 'object',
+      required: ['title', 'text', 'creator', 'comments'],
+      properties: {
+        title: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        text: {
+          bsonType: 'string',
+          description: 'must be a string and is required'
+        },
+        creator: {
+          bsonType: 'objectId',
+          description: 'must be an objectid and is required'
+        },
+        comments: {
+          bsonType: 'array',
+          description: 'must be an array and is required',
+          items: {
+            bsonType: 'object',
+            required: ['text', 'author'],
+            properties: {
+              text: {
+                bsonType: 'string',
+                description: 'must be a string and is required'
+              },
+              author: {
+                bsonType: 'objectId',
+                description: 'must be an objectid and is required'
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  validationAction: 'warn'
+});
+
+Helpful Articles/ Docs:
+
+The MongoDB Limits: https://docs.mongodb.com/manual/reference/limits/
+
+The MongoDB Data Types: https://docs.mongodb.com/manual/reference/bson-types/
+
+More on Schema Validation: https://docs.mongodb.com/manual/core/schema-validation/
+
+
+SECTION 4
+---------
+# Start a mongodb server and point to a different database folder
+mongod --dbpath /home/dhruv/Programming/mongodb/data/db --logpath /home/dhruv/Programming/mongodb/logs/mongodb.log
+
+# Directory per db options to have directory per per rather than having everything in one root folder
+mongod --directoryperdb
+
+# --fork option runs mongo db as background service but we need to set --logpath as background server does not have any place to log its messages
+mongod --fork --logpath path_to_log_file
+
+# To stop a background server while connected by mongo client issue following command
+> First connect to admin db
+use admin
+> Issue shutdown command
+db.shutdownServer()
+
+# using configuration file to have all startup options
+> To start a mongod with a config file use as
+mongod --config path_to_config_file
+or
+mongod -f path_to_config_file
+> Read about mongodb config file options on following link
+https://docs.mongodb.com/manual/reference/configuration-options/
+
+# mongo client help.
+> connect to mongo server and issue following command to check help at system level
+help
+> connect to a database as issue following command to chech help at db level
+use db_name
+db.help()
+> connect to a collection as issue following command to check help ast collection level
+use db_name
+db.collection_name.help()
+
+SECTION 5
+---------
+Its a basic module about mongodb compass
+
+SECTION 6
+---------
+Create Operations
+
+insertOne() --> db.collectionName.insertOne({field: "value"})
+insertMany() --> db.collectionName.insertMany([
+						{field: "value"},
+						{field: "value" ])
+insert() --> db.collectionName.insert()
+mongodbimport --> mongoimport -d cars -c carsList --drop --jsonArray
+
+Ordered Insert: 
+What does this means that if we are inserting multiple documents with insertMany() operation, this operation will be aborted if some kind of error is encountered at a particular document and any further documents listed in insertMany() are rejected. We can alter this behaviour with following code snippet.
+insertMany([{_id: "name1", name: "Dhruv"},{_id: "name2", name: "Poonam"}], {ordered: false}) 
+
+WriteConcern:
+This concept controls how storage engine of mongo db show behave. Various options are
+{ w: 1, j: undefined }
+{ w: 1, j: true }
+{ w: 1, wtimeout: 200, j: true}
+w --> write instances
+wtimeout --> write timeout
+j --> writing to journal file
+e.g.
+db.collectionName.insertOne({name: "Dhruv", age: 38}, {writeConcert: {w: 1, j: true, wtimeout: 200}})
+
+Atomicity: 
+Mongo DB guaranties atomicity on per documents basis. Its like either whole single document is saved or not.
+
+Import data to running instance of mongodb
+mongoimport <path_to_json_data_file.json> -d <name_of_db> -c <name_of_collection> --jsonArray --drop
+further explanation
+--jsonArray: option tells mongoimport command that json data file contains not only one document but array of documents
+--drop: options tells mongoimport command to drop the collection if it exists. 
+
+SECTION 7
+---------
+Example of using find method on a collection
+db.collectionName.find({age: 30}) or 
+db.collectionName.find({age:{$gt: 30}})
+
+Types
+------
+Query Operators      --> Locate Data 			--> e.g $eq, $lt
+Projection Operators --> Modify Data Presentation	--> e.g $
+
+
+Query Selectors
+----------------
+Comparison
+Evaluation
+Logical
+Array
+Element
+Comments
+
+
+Projection Operators
+--------------------
+$
+$elemMatch
+$meta
+$slice
+
+Using find() and findOne()
+--------------------------
+find({name: "The Last Ship"}) // returns all documents with matching criteria
+findOne({runtime: {$lt: 60}}) // returns first documents with matching criteria
+Examples of comparison query operators
+$eq, $gt, $gte, $in, $lt, $lte, $ne, $nin
+For more info
+https://docs.mongodb.com/manual/reference/operator/query/
+
+Finding embedded Fields & Arrays
+---------------------------------
+# Below command is used query data with a embedded document
+db.collectionName.find({"rating.average": {$lt: 7}})
+
+# Below command is used to find a document with a array named "genres" and if it has "Drama" value
+db.collectionName.find({genres: "Drama"})
+
+# Below command is used to find a document with a array named "genres" and if it has exactly one value of "Drama" value
+db.collectionName.find({genres: ["Drama"]})
+
+# $in looks for documents with value provided as array
+db.collectionName.find({runtime: {$in: [30, 42]}})
+
+# $nin behaves in opposite way of $in operator
+
+Logical Operators
+-----------------
+$or, $not, $and, $nor
+Syntax to use logical operator
+$or operator
+db.collectionName.find({$or: [{"ratting.average": {$lt: 5}},{"rating.average": {$gt: 9.3}}]})
+
+$nor operator works just as opposite of $or operator
+
+$and operator
+db.collectionName.find({$and: [{"rating.average": {$gt: 9}},{genres: "Drama"}]})
+or following syntax will also work for $and operator
+db.collectionName.find({"rating.average": {$gt: 9}, {genres: "Drama"})
+but prefer to use the syntax of first query.
+
+$not operator
+db.collectionName.find({runtime: {$not: {$eq: 60}}})
+
+Elements Operators
+------------------
+$exists
+db.collectionName.find({age: {$exists: true}})
+or  
+db.collectionName.find({age: {$exists: true, $gt: 30}})
+
+$type
+db.collectionName.find({age: {$type: "number"}})
+or
+db.collectionName.find({age: {$type: ["number", "string"]}})
+
+Evaluation Operators
+--------------------
+$regex
+db.collectionName.find({summary: {$regex: /musical/}})
+
+$expr
+{
+	"_id" : ObjectId("5ffab8a6eb2315eacc87f3a6"),
+	"volume" : 100,
+	"target" : 120
+}
+for a document shape as above $expr use to find all documents where volume is greater than target
+db.collectionName.find({$expr: {$gt: ["$volume", "$target"]}})
+
+Query to check if difference between volume and target is greater than certain value
+db.collectionName.find({$expr: {$gt: [{$cond: {if: {$gte: ["$volume", 190]}, then: {$subtract: ["$volume", 30]}, else: "$volume"}}, "$target"]}})
+Though its quite complex go easy and try to understand
+
+Querying Arrays
+---------------
+{
+	"_id" : ObjectId("5ffab3a6eb2315eacc87f3a3"),
+	"name" : "Max",
+	"hobbies" : [
+		{
+			"title" : "Sports",
+			"frequency" : 3
+		},
+		{
+			"title" : "Cooking",
+			"frequency" : 6
+		}
+	],
+	"phone" : 12345678
+}
+
+For above document shape, if we need to find documents whose title = "Sports" use following query
+db.users.find({"hobbies.title": "Sports"}).pretty()
+
+
+$size operator
+To find document which has hobbies array size of 3 use following query
+db.users.find({hobbies: {$size: 3}}).pretty()
+
+$all operator
+$all operator makes sure items provided to it are present in document in any order.
+db.collectionName.find({genre: {$all: ["action", "thriller"]}}).pretty()
+
+$elemMatch
+This operator find document with provided element shape and its value
+db.users.find({hobbies: {$elemMatch: {title: "Sports", frequency: {$gte: 3}}}}).pretty()
+
+Cursor Methods
+-------------
+next()
+forEach()
+hasNext()
+sort({"rating.average": 1, runtime: -1}) // 1 for ascending or -1 for descending
+skip(num) // allow to skip num documents
+limit(num) // allow only to supply num documents on request
+
+
+Projection helps us to only send subset of document required for our application
+--------------------------------------------------------------------------------
+To use projection with embedded documents following syntax
+db.collectionName.find({}, {name: 1, age: 1})
+
+To use projection with array use following syntax
+db.collectionName.find({genres: "Drama"}).pretty()
+
+$slice can limit number of elements of arrays that can be shown
+e.g. $slice: 2 //limit size of array to two only
+e.g. $slice: [2, 3] // start reading array after element 2 and limit size of array to 3
+
+Study this topic again 
+
+
+SECTION 8
+---------
+Field Update Operators
+$currentDate
+$inc : $inc{age: 1}
+$min : $min{age: 35}	
+$max : $min{age: 38} 
+$mul : $mul{age: 1.1}
+$rename: $rename : {old_field_name: "new_field_name"}
+$set: $set: {hobbies: [{title: "Cooking", frequency: 4},{title: "Sleeping", frequency: 14}]}
+$setOnInsert
+$unset: $unset: {age: "whatever value, prefer to use empty string"
+
+
+upsert: is a special operation in mongodb with update a record if its found in a query, but if record is not found a new record is inserted to database.
+e.g. 
+db.collectionName.updateOne({<search_criteria>}, {<update_fields>}, {upsert: true})
+
+Array Update Operator
+$, $[], $[<identifier>], $addToSet, $pop, $pull, $push, $pullAll
+
+$ e.g.
+db.users.updateMany({hobbies: {$elemMatch: {title: "Sports", frequency: {$gte: 3}}}}, {$set: {"hobbies.$.highFrequency": true}})
+
+$[] e.g.
+db.users.updateMany({age: {$gte: 30}},{$inc: {"hobbies.$[].frequency": -1}})
+
+arrayFilters e.g.
+db.users.updateMany({"hobbies.frequency": {$gt: 2}},{$set: {"hobbies.$[el].goodFrequency": true}},{arrayFilters: [{"el.frequency": {$gt: 2}}]})
+{ "acknowledged" : true, "matchedCount" : 3, "modifiedCount" : 1 }
+
+$push - to add single document in array e.g.
+db.users.updateOne({name: "Manuel"},{$push: {hobbies: {title: "Sports", frequency: 2}}}, {upsert: true})
+
+$each - to add multiple document in array e.g.
+db.users.updateOne({name: "Maria"}, {$push: {hobbies: {$each: [{title: "Good Wine", frequency: 1},{title: "Hiking", frequency: 3}]}}})
+
+We can also sort data while inserting it into array e.g
+db.users.updateOne({name: "Anna"}, {$push: {hobbies: {$each: [{title: "Good Wine", frequency: 11},{title: "Hiking", frequency: 3}], $sort: {frequency: 1} }}})
+
+$pull example
+db.users.updateOne({name: "Maria"},{$pull: {hobbies: {title: "Hiking"}}})
+
+$pop to remove first or last element of array unconditional
+
+$addToSet is similar to $push but it will not add duplicate items.
+
+
+SECTION 9
+---------
+deleteOne(), deleteMany()
+drop() 
+
+SECTION 10
+----------
+This section about performance but creating indexes and search, update or delete query can be executed more efficiently.
+
+Default behaviour to find a document in mongodb is to use collection scan.
+But this can be improved by use of index.
+
+Below command to diplay what mongo db is doing to find a query.
+db.contacts.explain().find({"dob.age": {$gt: 60}}).count()
+
+Below command to diplay what mongo db is doing with its execution stats to find a query.
+db.contacts.explain("executionStats").find({"dob.age": {$gt: 60}}).count()
+
+Command to create index for a collection. use 1 for ascending and -1 for descending order
+db.contacts.createIndex({"dob.age": 1})
+
+Command to drop index
+db.contacts.dropIndex({"dob.age": 1})
+
+Indexs will be helpful if only some portion of documents will be reterived from collection. If major portion of documents are to be reterived as a result of query then index will not help much.
+
+Command to create compound indexs
+db.contacts.createIndex({"dob.age": 1, gender: 1})
+
+Command to get list of index for a collection
+db.contacts.getIndexes()
+
+Command to create partial index
+db.contacts.createIndex({"dob.age": 1},{partialFilterExpression: {gender: "male"}})
+
+Command to create time to live index. This type of index works only on fields with Date() key
+db.sessions.createIndex({createdAt: 1},{expireAfterSeconds: 10})
+
+
+SECTION 11
+----------
+Any GeoJSON object is of shape
+{
+	name: <Type name>,
+	coordinates: [longitude, lattitude]
+}
+
+# Query to insert Geospatial data
+db.locations.insertOne({name: "Ref Point 1", location: {type: "Point", coordinates: [150.97822, -33.80295]}}) 
+
+# Create GeoSpatial Index
+db.places.createIndex({location: "2dsphere"})
+
+# Query to find places near given coordinates
+db.places.find({location: {$near: {$geometry: {type: "Point", coordinates: [151.2104088, -33.8586869]}}}})
+
+# Query to find places with min and max distance parameter
+db.places.find({location: {$near: {$geometry: {type: "Point", coordinates: [151.2104088, -33.8586869]}, $maxDistance: 3000, $minDistance: 10}}}).pretty()
+
+# Query to find place with a certain area say a polygon where points will in p1,p2 etc will be in geospactial format [longitude, latitude]
+db.places.find({location: {$geoWithin: {$geometry: {type: "Polygon", coordinates: [[p1, p2, p3, p4, p1]]}}}})
+
+# Query to find a point within a certain area
+1. Store coordinate of area in database as
+db.areas.insertOne({name: "Golden Gate Park", area: {type: "Polygon", coordinates: [[p1, p2, p3, p4, p1]]}})
+2. Create index for this collection
+db.areas.createIndex({area: "2dsphere"})
+3. Execute find query
+db.areas.find({area:{$geoIntersects: {$geometry: {type: "Point", coordinates: [longitude, latitude]}}}})
+
+# Query to find a point within a certain radius. This query will produce list of place in unsorted fashion
+db.places.find({location: {$geoWithin: {$centerSphere: [[longitude, latitude], Kms / 6378.1]}}})
+
+
+SECTION 12
+----------
+Aggregation Framework is pipeline operation to modify the fetched data and present it as per the use case.
+
+# Simplest aggregate command
+db.persons.aggregate([{ $match: {gender: "female"}}]) 
+
+# Command to aggregate all females grouped by states they live and sum all persons living in smae state and sorted in ascending order.
+db.persons.aggregate([
+    { $match: { gender: 'female' } },
+    { $group: { _id: { state: "$location.state" }, totalPersons: { $sum: 1 } } },
+    { $sort: { totalPersons: -1 }}
+]).pretty();
+
+# Command to aggregate all person with age greater than 50 grouped by gender, sum all persons according to gender and compute age average. 
+db.persons.aggregate([
+    { $match: { 'dob.age': { $gt: 50 } } },
+    {
+      $group: {
+        _id: { gender: '$gender' },
+        numPersons: { $sum: 1 },
+        avgAge: { $avg: '$dob.age' }
+      }
+    },
+    { $sort: { numPersons: -1 } }
+  ]).pretty();
+  
+# $project command transforms a document to a different structure
+db.persons.aggregate([
+    {
+      $project: {
+        _id: 0,
+        gender: 1,
+        fullName: {
+          $concat: [
+            { $toUpper: { $substrCP: ['$name.first', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.first',
+                1,
+                { $subtract: [{ $strLenCP: '$name.first' }, 1] }
+              ]
+            },
+            ' ',
+            { $toUpper: { $substrCP: ['$name.last', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.last',
+                1,
+                { $subtract: [{ $strLenCP: '$name.last' }, 1] }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]).pretty();
+  
+Aggregate command have multiple stage of same type. Like it can have multiple stages of project and output of one project stage can be input to another project stage
+
+db.persons.aggregate([
+	{
+		$project: {
+			_id: 0,
+			name: 1,
+			email: 1,
+			location: {
+				type: "Point",
+				coordinates: [
+					{
+						$convert: {
+							input: '$location.coordinates.longitude',
+							to: 'double'
+							onError: 0.0,
+							onNull: 0.0
+						},
+					{
+						$convert: {
+							input: '$location.coordinates.longitude',
+							to: 'double'
+							onError: 0.0,
+							onNull: 0.0
+						}
+					}
+				]
+			}
+		}
+	}
+]).pretty()
+
+
+// Basically $project operator has 1-to-1 relationship and $group has n-to-1 relationship
+
+# Working with arrays
+# inserting arrays in allHobbies
+db.friends.aggregate([
+	{
+		$group: {
+			_id: {age: "$age"}, allHobbies: { $push: "$hobbies"}
+		}
+	}
+]).pretty()
+
+// unwinding array and inserting values of arrays to allHobbies
+db.friends.aggregate([
+	{ $unwind: "$hobbies"},
+	{
+		$group: {
+			_id: {age: "$age"}, allHobbies: { $push: "$hobbies"}
+		}
+	}
+]).pretty()
+
+// example of unwinding documents
+db.friends.aggregate([
+	{ $unwind: "$hobbies"}]).pretty()
+	
+// inserting uniques elements to arrays
+db.friends.aggregate([
+	{ $unwind: "$hobbies"},
+	{
+		$group: {
+			_id: {age: "$age"}, allHobbies: { $addToSet: "$hobbies"}
+		}
+	}
+]).pretty()
+
+// getting first value of array
+db.friends.aggregate([
+	{
+		$project: {_id: 0, examScore: { $slice: ["$examScores", 1]}}
+	}
+]).pretty()
+
+// get number of elements in array
+db.friends.aggregate([
+	{
+		$project: {_id: 0, numScores: { $size: "$examScores"}}
+	}
+]).pretty()
+
+// using filter operator
+db.friends.aggregate([
+    {
+      $project: {
+        _id: 0,
+        scores: { $filter: { input: '$examScores', as: 'sc', cond: { $gt: ["$$sc.score", 60] } } }
+      }
+    }
+  ]).pretty();
+
+// Show only largest score out of array of scores
+db.friends.aggregate([
+	{ $unwind: "$examScores"},
+	{ $project: { _id: 1, name: 1, age: 1, score: "$examScores.score"}},
+	{ $sort: {score: -1} },
+	{ $group: { _id: "$_id", name: { $first: "$name" }, maxScore: { $max: "$score"}}},
+	{ $sort: { maxScore: -1 }}
+])
+
+// check the distribution of data using $bucket operator
+db.persons.aggregate([
+    {
+      $bucket: {
+        groupBy: '$dob.age',
+        boundaries: [18, 30, 40, 50, 60, 120],
+        output: {
+          numPersons: { $sum: 1 },
+          averageAge: { $avg: '$dob.age' }
+        }
+      }
+    }
+  ]).pretty();
+
+db.persons.aggregate([
+    {
+      $bucketAuto: {
+        groupBy: '$dob.age',
+        buckets: 5,
+        output: {
+          numPersons: { $sum: 1 },
+          averageAge: { $avg: '$dob.age' }
+        }
+      }
+    }
+  ]).pretty();
+  
+// write the output of aggregate pipeline in another collection
+db.persons.aggregate([
+    {
+      $project: {
+        _id: 0,
+        name: 1,
+        email: 1,
+        birthdate: { $toDate: '$dob.date' },
+        age: "$dob.age",
+        location: {
+          type: 'Point',
+          coordinates: [
+            {
+              $convert: {
+                input: '$location.coordinates.longitude',
+                to: 'double',
+                onError: 0.0,
+                onNull: 0.0
+              }
+            },
+            {
+              $convert: {
+                input: '$location.coordinates.latitude',
+                to: 'double',
+                onError: 0.0,
+                onNull: 0.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      $project: {
+        gender: 1,
+        email: 1,
+        location: 1,
+        birthdate: 1,
+        age: 1,
+        fullName: {
+          $concat: [
+            { $toUpper: { $substrCP: ['$name.first', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.first',
+                1,
+                { $subtract: [{ $strLenCP: '$name.first' }, 1] }
+              ]
+            },
+            ' ',
+            { $toUpper: { $substrCP: ['$name.last', 0, 1] } },
+            {
+              $substrCP: [
+                '$name.last',
+                1,
+                { $subtract: [{ $strLenCP: '$name.last' }, 1] }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    { $out: "transformedPersons" }
+  ]).pretty();
+  
+// Using $geoNear pipeline stage
+db.transformedPersons.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [-18.4, -42.8]
+        },
+        maxDistance: 1000000,
+        num: 10,
+        query: { age: { $gt: 30 } },
+        distanceField: "distance"
+      }
+    }
+  ]).pretty();
+
+SECTION 13
+----------
+Number in mongodb
+> integer (int32)
+> Longs (int64)
+> Doubles (64bit) ---> default
+> High Precision (128bit)
+
+# To insert number as Int (32 bits) user following command e.g.
+db.persons.insertOne({age: NumberInt("29")}) --> preferred way
+or
+db.persons.insertOne({age: NumberInt(29)})
+
+# To insert number as Long (64 bits)
+db.companies.insertOne({valuation: NumberLong("9223372036854775807")})
+
+# To insert number as High Precision (128 bit)
+
+SECTION 14
+----------
+> createUser()
+> updateUser()
+
+# Start mongodb with authentication support
+mongod --auth --dbpath /home/dhruv/Programming/mongodb/data/db
+
+# Start mongo client with credintials on command line
+mongo -u <user_name> -p <password>
+
+# Add user to mongodb. Mongodb has a special exception to create user and assign role if connect from a local host. Process to do it
+1. Connect to admin database
+use admin
+2. Create user
+db.createUser({user: "User_name", pwd: "password", roles: ["userAdminAnyDatabase"]})
+
+# Built-in roles
+1. Database User
+> read
+> readWrite
+
+2. Database Admin
+> dbAdmin
+> userAdmin
+> dbOwner
+
+3. All Database Roles
+> readAnyDatabase
+> readWriteAnyDatabase
+> userAdminAnyDatabase
+> dbAdminAnyDatabase
+
+4. Cluster Admin
+> clusterManager
+> clusterMonitor
+> hostManager
+> clusterAdmin
+
+5. Backup/Restor
+> backup
+> restore
+
+6. Superuser
+> dbOwner (admin)
+> userAdmin (admin)
+> userAdminAnyDatabase
+> root
+
+# Login to mongo db with command line authentication
+mongo -u dhruv -p daksh2405 --authenticationDatabase admin
+
+# create user against a particular db
+db.createUser({user: 'appdev', pwd: 'dev', roles:["readWrite"]})
+or use admin db as
+use admin
+db.createUser({user: 'appdev', pwd: 'dev', roles:[{role: "readWrite", db: "sales"}, {role: "readWrite", db: "customers"}])})
+
+# To logout from the db
+db.logout()
+
+# Update existing user for roles of different database
+db.updateUser("user_name", {roles: ["readWrite", {role: "readWrite", db: "blog"}]})
+
+# Command to get user roles
+db.getUser('user_name')
+
+# Steps to create ssl certificate locally
+1. Generate SSL files
+openssl req -newkey rsa:2048 -new -x509 -days 365 -nodes -out mongodb-cert.crt -keyout mongodb-cert.key
+
+2. Concatenate .crt and .key file
+cat mongodb-cert.key mongodb-cert.crt > mongodb.pem
+
+3. Launch mongodb with ssl enabled as below
+mongod --auth --dbpath /home/dhruv/Programming/mongodb/data/db --sslMode requireSSL --sslPEMKeyFile /home/dhruv/Programming/mongodb/ssl/mongodb.pem
+
+4. Connect from terminal with ssl paramenters as
+mongo --ssl --sslCAFile /home/dhruv/Programming/mongodb/ssl/mongodb.pem --host localhost
+
+SECTION 15
+----------
+
+1. Capped collections: To limit number of documents in a collection. Create capped collection as below
+
+db.createCollection("collection_name", {capped: true, size: 10000, max: 3})
+
+2. Replica Set: Use replica set for following features
+> Backup/Fault Tolerancy
+> Improve Read Performance
+
+3. Sharding (Horizontal Scaling): Here data is distributed across Shards and not replicated. Query are run across all Shards.
+
+4. Use mongodb atlas as a managed service to deploy your mongodb on web. They have a free tier also.
+
+SECTION 16
+----------
+With transaction we can tell mongo db either all transaction succeed together or fail together.
+
+SECTION 17
+----------
+Splitting work between Drivers and Shell for application development
+
+Shell
+-----
+> Configure Database
+> Create Collections
+> Create Indexes
+
+Driver
+-------
+> CRUD Operations
+> Aggregation Pipeline
+
+SECTION 18
+----------
+Serverless Platform for building apps
+1. Cloud database (Atlas)
+
+2. End user Authentication
+
+3. Access to Atlas Database
+> Stitch QueryAnyware
+> MongoDB Mobile
+
+4. React to events: Execute code/functionality in the cloud
+> Stitch Triggers
+> Stitch Functions
+> Stitch Services
+
+
