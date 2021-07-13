@@ -114,13 +114,13 @@ Embedded Documents
 Document always start and ends with {} set of braces. A documents example
 {
   name: "Dhruv Mohindru",
-  age: 38
+  age: 36
 }
 
 A document can has also have embedded document for example
 {
   name: "Dhruv Mohindru",
-  age: 38,
+  age: 36,
   address: {
   		street: "43/24-28 Mons Rd",
   		city: "Westmead",
